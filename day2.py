@@ -39,7 +39,7 @@ with open('input2.txt', 'r') as theFile:
         myCubeSets = myCubeSets.split('; ')
 
         # Check if the game is possible
-        foundPossible = True  # assume it is possible until we learn otherwise
+        foundPossible = True  # assume it is possible unless we learn otherwise
         for theCubeSet in myCubeSets:
             myCubes = re.findall(r'(\d+) (\w+)', theCubeSet)
             for theCount, theColor in myCubes:
