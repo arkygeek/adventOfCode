@@ -18,9 +18,7 @@ with open('input.txt', 'r') as file:
 
 print(f"Final sum: {theSum}")
 
-
 # part 2
-
 
 theSum: int = 0
 # Define a dictionary mapping spelled out numbers to their numerical equivalents
