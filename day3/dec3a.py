@@ -60,7 +60,7 @@ def calculate_gear_ratios(theInputLines, thePotentialLabels, theRatioMap, theVal
 
                 if len(myAdjacentNumbers) == 2:
                     print(f'Adjacent numbers: {myAdjacentNumbers}')
-                    myTotalGearRatioSum += myAdjacentNumbers.pop() * myAdjacentNumbers.pop() 
+                    myTotalGearRatioSum += myAdjacentNumbers.pop() * myAdjacentNumbers.pop()
     return myTotalGearRatioSum
 
 
@@ -116,7 +116,6 @@ def parse_input(theInputLines):
                             The isdigit method returns True if the string is a digit and False otherwise.
 
                         The while loop continues as long as the next character exists and is a digit.
-                        This is typically used to handle numbers that are more than one digit long.
                         For example, if myLine is '1234', this loop would treat '1234' as a single number,
                         rather than four separate numbers.
                     """
