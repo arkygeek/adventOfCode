@@ -1,0 +1,141 @@
+'''
+What I planned ...
+    Open file 'input3.txt' for reading.
+    Read file line by line and store the lines in a list.
+    Create a 2D boolean array (marked with the same dimensions as the input) initialized with False.
+    Iterate over the list of lines. For each line:
+        Iterate over each character in the line.
+        If the character is a symbol, mark all 8 positions around it in the marked array.
+        Initialize variable theSum = 0.
+    Iterate over the list of lines again. For each line:
+        Iterate over each character in the line.
+        If the character is a digit and its position is marked, add it to theSum.
+        If the character is a digit and the next character is also a digit, concatenate them to form a multi-digit number before adding to theSum.
+        Check if the position of any digit in the number is marked.
+
+What I did:
+
+    This Python script calculates gear ratios from a given input file.
+    The input file contains a map of gears and numbers, represented as a grid of characters.
+
+    The script consists of several functions:
+
+        mark_adjacent_positions(marked, i, j): Marks the positions adjacent to a given position in a 2D list.
+        print_map(map): Prints a 2D list in a grid format.
+        calculate_gear_ratios(input_lines, potential_labels, ratio_map, value_map): Calculates the sum of the gear ratios. A gear ratio is calculated by multiplying two numbers adjacent to a gear. A gear is represented by '*' and numbers are represented by 'F' in the ratio map.
+        parse_input(input_lines): Parses the input lines to generate several maps and a list of potential labels. The maps include a gear map (marking the positions of gears), a ratio map (marking the positions of numbers), and a value map (marking the positions of numbers with their values).
+
+    Steps:
+        read the input file
+        parse the input lines to generate the maps and potential labels
+        calculate the sum of the gear ratios
+        prints the result
+
+        I also left lines in that will print the gear map and ratio map for visual inspection.
+            * This was very useful for debugging using the small smaple data first,
+            then the first three lines of the actual data
+'''
+
+def calculate_gear_ratios(theInputLines, thePotentialLabels, theRatioMap, theValueMap):
+    myTotalGearRatioSum = 0
+    for myRowIndex, myLine in enumerate(theInputLines):
+        for myColumnIndex, myCharacter in enumerate(myLine):
+            if myCharacter == '*':
+                print(f'Gear found at position ({myRowIndex}, {myColumnIndex})')
+                myAdjacentNumbers = set()
+                for myRowOffset in [-1, 0, 1]:
+                    for myColumnOffset in [-1, 0, 1]:
+                        if myRowOffset == 0 and myColumnOffset == 0:
+                            continue
+                        myAdjacentRow, myAdjacentColumn = myRowIndex + myRowOffset, myColumnIndex + myColumnOffset
+                        if 0 <= myAdjacentRow < len(theInputLines) and 0 <= myAdjacentColumn < len(theInputLines[0]) and theRatioMap[myAdjacentRow][myAdjacentColumn] == 'F':
+                            myAdjacentNumbers.add(theValueMap[myAdjacentRow][myAdjacentColumn])
+                if len(myAdjacentNumbers) == 2:
+                    print(f'Adjacent numbers: {myAdjacentNumbers}')
+                    myTotalGearRatioSum += myAdjacentNumbers.pop() * myAdjacentNumbers.pop()
+    return myTotalGearRatioSum
+
+
+def print_map(theMap):
+    for myRow in theMap:
+        print(''.join(str(myCell) for myCell in myRow))
+
+
+def calculate_gear_ratios(theInputLines, thePotentialLabels, theRatioMap, theValueMap):
+    myTotalSum = 0
+    for myRowIndex, myLine in enumerate(theInputLines):
+        for myColumnIndex, myCharacter in enumerate(myLine):
+            if myCharacter == '*':
+                # print(f'Gear found at position ({myRowIndex}, {myColumnIndex})')
+                myAdjacentNumbers = set()
+                for myRowOffset in [-1, 0, 1]:
+                    for myColumnOffset in [-1, 0, 1]:
+                        if myRowOffset == 0 and myColumnOffset == 0:
+                            continue
+                        myAdjacentRow, myAdjacentColumn = myRowIndex + myRowOffset, myColumnIndex + myColumnOffset
+                        if 0 <= myAdjacentRow < len(theInputLines) and 0 <= myAdjacentColumn < len(theInputLines[0]) and theRatioMap[myAdjacentRow][myAdjacentColumn] == 'F':
+                            myAdjacentNumbers.add(theValueMap[myAdjacentRow][myAdjacentColumn])
+                if len(myAdjacentNumbers) == 2:
+                    # print(f'Adjacent numbers: {myAdjacentNumbers}')
+                    myTotalSum += myAdjacentNumbers.pop() * myAdjacentNumbers.pop()
+    return myTotalSum
+
+
+def parse_input(theInputLines):
+    myPotentialLabels = []
+    myGearMap = [['.' for _ in line] for line in theInputLines]
+    myRatioMap = [['.' for _ in line] for line in theInputLines]
+    myValueMap = [['.' for _ in line] for line in theInputLines]
+    for myRowIndex, myLine in enumerate(theInputLines):
+        myColumnIndex = 0
+        while myColumnIndex < len(myLine):
+            if myLine[myColumnIndex] == '*':
+                myGearMap[myRowIndex][myColumnIndex] = '*'
+            if myLine[myColumnIndex].isdigit():
+                myStart = myColumnIndex
+                myNum = myLine[myColumnIndex]
+
+                # the following line of code (part of this while loop) checks if the next character in myLine is a digit:
+                while myColumnIndex + 1 < len(myLine) and myLine[myColumnIndex + 1].isdigit():
+                    """
+                    Breaking down what this does:
+                        myColumnIndex + 1 < len(myLine):
+                            This checks if the next index is within the bounds of myLine.
+                            If myColumnIndex + 1 is equal to or greater than (>=) len(myLine),
+                            it means we've reached the end of myLine and there's no next character to check.
+                        myLine[myColumnIndex + 1].isdigit():
+                            This checks if the next character in myLine is a digit.
+                            The isdigit method returns True if the string is a digit and False otherwise.
+
+                        The while loop continues as long as the next character exists and is a digit.
+                        This is typically used to handle numbers that are more than one digit long.
+                        For example, if myLine is '1234', this loop would treat '1234' as a single number,
+                        rather than four separate numbers.
+                    """
+                    myColumnIndex += 1
+                    myNum += myLine[myColumnIndex]
+                myPotentialLabels.append({
+                    'value': int(myNum),
+                    'row': myRowIndex,
+                    'start': myStart,
+                    'end': myColumnIndex})
+                for myRangeIndex in range(myStart, myColumnIndex+1):
+                    myRatioMap[myRowIndex][myRangeIndex] = 'F'
+                    myValueMap[myRowIndex][myRangeIndex] = int(myNum)
+            myColumnIndex += 1
+    return myPotentialLabels, myGearMap, myRatioMap, myValueMap
+
+with open('input3.txt', 'r') as file:
+    myInputLines = [line.strip() for line in file]
+
+# print("Initial input data:")
+# print_map(myInputLines)
+myPotentialLabels, myGearMap, myRatioMap, myValueMap = parse_input(myInputLines)
+myTotalSum = calculate_gear_ratios(myInputLines, myPotentialLabels, myRatioMap, myValueMap)
+# print(myTotalSum)
+# print("Map of all found gear symbols:")
+# print_map(myGearMap)
+# print("Map of all potential ratio objects:")
+# print_map(myRatioMap)
+myTotalSum = calculate_gear_ratios(myInputLines, myPotentialLabels, myRatioMap, myValueMap)
+print(f'Total sum of gear ratios: {myTotalSum}')
