@@ -1,20 +1,4 @@
 '''
-What I planned ...
-    Open file 'input3.txt' for reading.
-    Read file line by line and store the lines in a list.
-    Create a 2D boolean array (marked with the same dimensions as the input) initialized with False.
-    Iterate over the list of lines. For each line:
-        Iterate over each character in the line.
-        If the character is a symbol, mark all 8 positions around it in the marked array.
-        Initialize variable theSum = 0.
-    Iterate over the list of lines again. For each line:
-        Iterate over each character in the line.
-        If the character is a digit and its position is marked, add it to theSum.
-        If the character is a digit and the next character is also a digit, concatenate them to form a multi-digit number before adding to theSum.
-        Check if the position of any digit in the number is marked.
-
-What I did:
-
     This Python script calculates gear ratios from a given input file.
     The input file contains a map of gears and numbers, represented as a grid of characters.
 
@@ -46,13 +30,37 @@ def calculate_gear_ratios(theInputLines, thePotentialLabels, theRatioMap, theVal
                 for myRowOffset in [-1, 0, 1]:
                     for myColumnOffset in [-1, 0, 1]:
                         if myRowOffset == 0 and myColumnOffset == 0:
+                            """
+                            'continue' in Python is used to skip the rest of the code
+                            inside the innermost loop and move to the next iteration.
+
+                            In this context, myRowOffset == 0 and myColumnOffset == 0
+                            checks if both offsets are zero. This would mean that the
+                            current position is the center of the 3x3 grid (the position
+                            of the gear itself)...
+
+                            Since the goal is to check the cells adjacent to the gear,
+                            not the gear itself, the continue statement is used to skip
+                            the current iteration of the loop when the offsets are both
+                            zero, effectively ignoring the gear's own position and only
+                            processing adjacent cells.
+                            """
                             continue
+
                         myAdjacentRow, myAdjacentColumn = myRowIndex + myRowOffset, myColumnIndex + myColumnOffset
-                        if 0 <= myAdjacentRow < len(theInputLines) and 0 <= myAdjacentColumn < len(theInputLines[0]) and theRatioMap[myAdjacentRow][myAdjacentColumn] == 'F':
+                        # Check if the adjacent row is within the bounds of the input lines
+                        myRowIsInBounds = 0 <= myAdjacentRow < len(theInputLines)
+                        # Check if the adjacent column is within the bounds of the input lines
+                        myCoulmnIsInBounds = 0 <= myAdjacentColumn < len(theInputLines[0])
+                        # Check if the position in the ratio map is marked as 'F'
+                        myMarkedPosition = theRatioMap[myAdjacentRow][myAdjacentColumn] == 'F'
+                        # If all conditions are met, execute the code inside the if statement
+                        if myRowIsInBounds and myCoulmnIsInBounds and myMarkedPosition:
                             myAdjacentNumbers.add(theValueMap[myAdjacentRow][myAdjacentColumn])
+
                 if len(myAdjacentNumbers) == 2:
                     print(f'Adjacent numbers: {myAdjacentNumbers}')
-                    myTotalGearRatioSum += myAdjacentNumbers.pop() * myAdjacentNumbers.pop()
+                    myTotalGearRatioSum += myAdjacentNumbers.pop() * myAdjacentNumbers.pop() 
     return myTotalGearRatioSum
 
 
