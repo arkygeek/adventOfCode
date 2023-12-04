@@ -14,45 +14,44 @@
 """
 
 
-
 def CalculatePoints(myCards):
-    """ Calculates the total points for a list of cards.
-    Args:
-        myCards (list): A list of cards.
-    Returns:
-        int: The total points for all the cards.
-    """
     myTotalPoints = 0
     for aCard in myCards:
-        aCard = aCard.split(': ')[1]  # Remove the leading text i.e. 'Card X: '
+        aCard = aCard.split(': ')[1]  # Remove 'Card X: '
         myWinningNumbers, myNumbers = aCard.split('|')
-
-        """ myWinningNumbers = set(map(int, myWinningNumbers.split()))
-        This line of code is doing a few things, but generally, it converts
+        myWinningNumbers = [s for s in myWinningNumbers.split() if s.isdigit()]
+        myNumbers = [s for s in myNumbers.split() if s.isdigit()]
+        myWinningNumbers = set(map(int, myWinningNumbers))
+        """
+        This bit of code is doing a few things, but generally, it converts
         a space-separated string of numbers into a set of integers.
         For example, if myWinningNumbers is: "41 48 83 86 17"
         this line of code would produce the set {41, 48, 83, 86, 17}
         This is how it works
-            myWinningNumbers.split()
-                This splits the string myWinningNumbers into a list of substrings.
-                * By default, split() divides a string into parts wherever it finds a space.
-            map(int, ...)
-                This applies the int function to each substring in the list.
-                The int function converts a string to an integer.
-                (this just turns a list of numeric strings into a list of integers)
-                @TODO implement a data validation step here in case there is weirdness in the input file
-            set(...): This converts the list of integers into a set.
-                        A set is an unordered collection of unique elements.
-                        This is a nice efficient way of eliminating duplicates, checking membership, etc.
+        myWinningNumbers.split()
+            This splits the string myWinningNumbers into a list of substrings.
+            (by default it will split() a string wherever it finds a SPACE)
+        map(int, ...)
+            This applies int (the function) to every substring in the list.
+            (this just turns a list of numeric strings into a list of integers)
+            @DONE implement a data validation step here in case there is weirdness in the input file
+                the list comprehensions (the following two indented lines) create new lists
+                that will only include the strings that can be converted to integers.
+                    [s for s in myWinningNumbers.split() if s.isdigit()]
+                    [s for s in myNumbers.split() if s.isdigit()]
+                The isdigit method checks if a string consists only of digits, which means it can be converted to an integer.
+        set(...)
+            This converts the list of integers into a set.
+            A Set is an UNORDERED collection of UNIQUE elements.
+            This is a nice efficient way of eliminating duplicates, checking membership, etc.
         """
-        myWinningNumbers = set(map(int, myWinningNumbers.split()))
-        myNumbers = set(map(int, myNumbers.split()))
-        print(f'Winning numbers: {myWinningNumbers}')  # Debug
-        print(f'My numbers: {myNumbers}')  # Debug
+        myNumbers = set(map(int, myNumbers))
+        print(f'Winning numbers: {myWinningNumbers}')  # Debug print
+        print(f'My numbers: {myNumbers}')  # Debug print
         myMatches = myWinningNumbers & myNumbers
-        print(f'Matches: {myMatches}')  # Debug
-        myPoints = 0 if len(myMatches) == 0 else 2**(len(myMatches) - 1)
-        print(f'Points for this card: {myPoints}')  # Debug
+        print(f'Matches: {myMatches}')  # Debug print
+        myPoints = 0 if len(myMatches) == 0 else 2**(len(myMatches) - 1) # B-)
+        print(f'Points for this card: {myPoints}')  # Debug print
         myTotalPoints += myPoints
     return myTotalPoints
 
