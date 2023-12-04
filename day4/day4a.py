@@ -65,3 +65,57 @@ The Plan:
         c) Repeat the process for the newly won cards until no more cards are won.
     4. Add up the total number of cards in the list of card instances.
 """
+
+# Define a function that calculates the total number of scratchcards
+def CalculateTotalScratchcards(theCards):
+    # Initialize a list to store the number of instances of each card.
+    # Each element in myInstances is initially set to 1.
+    myInstances = [1] * len(theCards)
+
+    # Initialize a variable to keep track of the current card index
+    i = 0
+
+    # While there are still cards to process
+    while i < len(theCards):
+        # Get the current card
+        myCard = theCards[i]
+
+        # Calculate the number of matches on the card
+        myMatches = CalculateMatches(myCard)
+
+        # For each match, add a copy of each subsequent card to the list of card instances
+        for j in range(i + 1, min(i + 1 + myMatches, len(theCards))):
+            myInstances[j] += myInstances[i]
+
+        # Move to the next card
+        i += 1
+
+    # Return the total number of cards
+    return sum(myInstances)
+
+# Define a function to calculate the number of matches on a card
+def CalculateMatches(card):
+    # Split the card into card name and numbers
+    card_name, numbers = card.split(': ')
+
+    # Split the numbers into winning numbers and your numbers
+    myWinningNumbers, myNumbers = numbers.split('|')
+
+    # Convert the numbers from strings to sets of integers
+    myWinningNumbers = set(map(int, myWinningNumbers.split()))
+    myNumbers = set(map(int, myNumbers.split()))
+
+    # Calculate and return the number of matches
+    return len(myWinningNumbers & myNumbers)
+
+with open('day4/input4.txt', 'r') as file: # I have my environment :P
+    myCards = file.read().splitlines()
+
+mySum: int = 0
+# Calculate matches for each card and print the results
+# for aCard in myCards:
+#     myValue = CalculateMatches(aCard)
+#     print(myValue)
+#     print(f'myValue: {myValue} and mySum: {mySum}')
+#     mySum += myValue
+print(f'Total scratchcards: {CalculateTotalScratchcards(myCards)}')
