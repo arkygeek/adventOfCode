@@ -94,12 +94,12 @@ def CalculateTotalScratchcards(theCards):
     return sum(myInstances)
 
 # Define a function to calculate the number of matches on a card
-def CalculateMatches(card):
+def CalculateMatches(theCard):
     # Split the card into card name and numbers
-    myCardName, numbers = card.split(': ')
+    myCardName, myNumbers = theCard.split(': ')
 
     # Split the numbers into winning numbers and your numbers
-    myWinningNumbers, myNumbers = numbers.split('|')
+    myWinningNumbers, myNumbers = myNumbers.split('|')
 
     # Convert the numbers from strings to sets of integers
     myWinningNumbers = set(map(int, myWinningNumbers.split()))
