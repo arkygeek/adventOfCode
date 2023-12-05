@@ -255,3 +255,20 @@ Here's a rough plan:
 
     This should be the solution to the puzzle.
 """
+# pseudo code
+
+def FindLocation(theAlmanac, theSeed):
+    # implement this
+    pass
+
+def SolveThePuzzle(theAlmanac, theSeedNumbers):
+    myProcessedSeeds = set()
+    myLocationNumbers = []
+
+    for aSeed in theSeedNumbers:
+        if aSeed not in myProcessedSeeds:
+            location = FindLocation(theAlmanac, aSeed)
+            myLocationNumbers.append(location)
+            myProcessedSeeds.add(aSeed)
+
+    return min(myLocationNumbers)
