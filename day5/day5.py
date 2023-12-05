@@ -171,9 +171,7 @@ So I think that the goal is to:
 
 """ The Plan
 I think lists, sets, and maps (dictionaries in Python) will be a good approach...
-
 Here's a rough plan:
-
 - Lists: use lists to store the initial seed numbers and the corresponding location numbers
 
 - Sets: Sets can be used to keep track of the seed numbers that have been processed.
@@ -228,32 +226,54 @@ Here's a rough plan:
 """
 
 """ More detailed plan
-
 1. Parse the input data:
     Read the almanac file and parse it into a suitable data structure.
     We can use a dictionary to store the mappings from each category to the next.
-
 2. Initialize the data structures:
     Create a list to store the initial seed numbers and a set to keep track of
     the seed numbers that have been processed. Also, create a dictionary to map
     each SEED number to its corresponding LOCATION number.
-
 3. Process the seed numbers:
     a) For each SEED number, use the mappings from the almanac to find the
         corresponding LOCATION number.
     b) Add the SEED number to the set of processed seed numbers and add the
         LOCATION number to the list of location numbers.
-
 4. Repeat the process:
     Continue processing the seed numbers until all seed numbers have been processed.
     NOTE: If a seed number is already in the set of processed seed numbers, we can
     skip it to avoid processing the same seed number multiple times.
-
 5. Find the lowest location number:
     Once all SEED numbers have been processed, find the lowest LOCATION number
     in the list of location numbers.
 
     This should be the solution to the puzzle.
+"""
+
+""" What I actually did
+1.  Read data from a file, parse it into a series of maps,
+    and then find the minimum location for a set of seeds.
+2.  ParseTheMap function:
+    This function takes a list of map lines as input and then:
+    a)  for each line, it splits the line into three integers:
+            1. the start of the destination range
+            2. the start of the source range, and
+            3. the length of the range.
+    b)  it then appends a tuple representing the source range and the
+        corresponding destination start to a list of map ranges.
+    c)  the list of map ranges is sorted and returned.
+3.  FindLocation function:
+    This function takes a seed and a list of maps as input.
+    For each map:
+    a) it finds the range that the seed falls into and
+    b) maps the seed to the corresponding destination.
+
+    The final mapped seed is then returned.
+
+The script reads the input data from a file, parses the seeds and the maps, and
+then finds the minimum location for the seeds using the FindLocation function.
+
+The solution (minimum location) is then printed.
+
 """
 
 from bisect import bisect_right
