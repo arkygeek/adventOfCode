@@ -136,7 +136,30 @@ So, the lowest location number in this example is 35.
 What is the lowest location number that corresponds to any of the initial seed numbers?
 """
 
+"""
+Summary:
+A gardener needs help with a food production problem.
+The gardener has an almanac that lists all the seeds that need to be planted
+The Almanac also has the corresponding _______ for each seed:
+    soil
+    fertilizer
+    water
+    light
+    temperature
+    humidity
+    location
 
+The almanac uses a complex mapping system where:
+    - each category is identified with a number, and
+    - numbers are reused by each category.
+
+So I think that the goal is to:
+ - find the lowest location number that:
+    - corresponds to any of the initial seed numbers by:
+        - converting each seed number through other categories:
+            - until you can find its corresponding location number.
+
+"""
 
 
 """
