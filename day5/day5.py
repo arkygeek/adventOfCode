@@ -112,7 +112,7 @@ seed  soil
 97    99
 98    50
 99    51
-With this map, you can look up the soil number required for each initial seed number:
+With this map, we can look up the soil number required for each initial seed number:
 
 Seed number 79 corresponds to soil number 81.
 Seed number 14 corresponds to soil number 14.
@@ -122,8 +122,8 @@ The gardener and his team want to get started as soon as possible, so they'd lik
 to know the closest location that needs a seed. Using these maps, find the lowest
 location number that corresponds to any of the initial seeds.
 
-To do this, you'll need to convert each seed number through other categories until
-you can find its corresponding location number.
+To do this, we'll need to convert each seed number through other categories until
+we can find its corresponding location number.
 
 In this example, the corresponding types are:
 
@@ -136,8 +136,7 @@ So, the lowest location number in this example is 35.
 What is the lowest location number that corresponds to any of the initial seed numbers?
 """
 
-"""
-Summary:
+""" Summary:
 A gardener needs help with a food production problem.
 The gardener has an almanac that lists all the seeds that need to be planted
 The Almanac also has the corresponding _______ for each seed:
@@ -157,20 +156,102 @@ So I think that the goal is to:
  - find the lowest location number that:
     - corresponds to any of the initial seed numbers by:
         - converting each seed number through other categories:
-            - until you can find its corresponding location number.
+            - until we can find its corresponding location number.
 
 """
 
 
-"""
-Observations
+""" Observations
 - Each line within a map contains three numbers:
     No.1 - the destination range start
     No.2 - the source range start, and
     No.3 - the range length
 
+"""
 
-The Plan
+""" The Plan
+I think lists, sets, and maps (dictionaries in Python) will be a good approach...
 
+Here's a rough plan:
 
+- Lists: use lists to store the initial seed numbers and the corresponding location numbers
+
+- Sets: Sets can be used to keep track of the seed numbers that have been processed.
+        This can help to avoid processing the same seed number multiple times.
+
+- Dictionaries: Dictionaries can be used to map each seed number to its corresponding location number.
+                I can also use dictionaries to store the mappings from the almanac.
+
+                **NOTE**
+                In Python, a map is not a built-in data type,
+                *** but ***
+                there is a built-in function called map().
+
+                The map() function applies a given function to each item of an iterable
+                (such as a list or tuple) and returns a list of the results.
+
+                Here's an example of how to use the map() function:
+                    def square(n):
+                    return n ** 2
+
+                    numbers = [1, 2, 3, 4, 5]
+                    squares = map(square, numbers)
+
+                    # Convert the map object to a list to print the results
+                    print(list(squares))  # Output: [1, 4, 9, 16, 25]
+
+                In this example, the map() function applies the square function
+                to each item in the numbers list.
+
+                In Python, a dictionary is a built-in data type that stores key-value pairs.
+
+                Here's an example of a dictionary:
+
+                student = {
+                    "name": "John Doe",
+                    "age": 20,
+                    "grade": "A"
+                }
+
+                print(student["name"])  # Output: John Doe
+
+                In this example:
+
+                 keys    :  Value
+                -------     ----------
+                "name"   :  "John Doe"
+                "age"    :  20
+                "grade"  :  "A"
+
+                We can access the value of a key by using the key inside square brackets [].
+
+"""
+
+""" More detailed plan
+
+1. Parse the input data:
+    Read the almanac file and parse it into a suitable data structure.
+    We can use a dictionary to store the mappings from each category to the next.
+
+2. Initialize the data structures:
+    Create a list to store the initial seed numbers and a set to keep track of
+    the seed numbers that have been processed. Also, create a dictionary to map
+    each SEED number to its corresponding LOCATION number.
+
+3. Process the seed numbers:
+    a) For each SEED number, use the mappings from the almanac to find the
+        corresponding LOCATION number.
+    b) Add the SEED number to the set of processed seed numbers and add the
+        LOCATION number to the list of location numbers.
+
+4. Repeat the process:
+    Continue processing the seed numbers until all seed numbers have been processed.
+    NOTE: If a seed number is already in the set of processed seed numbers, we can
+    skip it to avoid processing the same seed number multiple times.
+
+5. Find the lowest location number:
+    Once all SEED numbers have been processed, find the lowest LOCATION number
+    in the list of location numbers.
+
+    This should be the solution to the puzzle.
 """
