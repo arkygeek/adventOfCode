@@ -255,20 +255,101 @@ Here's a rough plan:
 
     This should be the solution to the puzzle.
 """
-# pseudo code
+# nope.
 
-def FindLocation(theAlmanac, theSeed):
-    # implement this
-    pass
+# def FindLocation(theAlmanacData, aSeed):
+#     myCurrentCategory = aSeed
+#     while True:
+#         print('Current category:', myCurrentCategory)  # Print the current category
+#         if myCurrentCategory not in theAlmanacData:
+#             print(f'{myCurrentCategory} was not found in theAlmanacData - BREAK')
+#             break
+#         if myCurrentCategory in theAlmanacData:
+#             return theAlmanacData[myCurrentCategory]
+#         for myNextCategory in theAlmanacData[myCurrentCategory]:
+#             myCurrentCategory = theAlmanacData[myCurrentCategory][myNextCategory]
+#             break
 
-def SolveThePuzzle(theAlmanac, theSeedNumbers):
-    myProcessedSeeds = set()
-    myLocationNumbers = []
+# def SolveThePuzzle(theAlmanacData, theSeedNumbers):
+#     myProcessedSeeds = set()
+#     myLocationNumbers = []
 
-    for aSeed in theSeedNumbers:
-        if aSeed not in myProcessedSeeds:
-            location = FindLocation(theAlmanac, aSeed)
-            myLocationNumbers.append(location)
-            myProcessedSeeds.add(aSeed)
+#     for aSeed in theSeedNumbers:
+#         if aSeed not in myProcessedSeeds:
+#             myLocation = FindLocation(theAlmanacData, aSeed)
+#             print('Location for seed', aSeed, ':', myLocation)  # Print the location for each seed
+#             if myLocation is not None:
+#                 myLocationNumbers.append(myLocation)
+#             myProcessedSeeds.add(aSeed)
 
-    return min(myLocationNumbers)
+#     print('Location numbers:', myLocationNumbers)  # Print the list of location numbers
+#     return min(myLocationNumbers) if myLocationNumbers else None  # Return None if the list is empty
+
+# def ParseTheAlmanac(almanac_lines):
+#     almanac = {}
+#     for line in almanac_lines:
+#         parts = line.split(' ')
+#         if len(parts) == 3:  # Only process lines with valid data
+#             category_number = int(parts[0])
+#             category_type = parts[1]
+#             next_category_number = int(parts[2])
+#             if category_number not in almanac:
+#                 almanac[category_number] = {}
+#             almanac[category_number][category_type] = next_category_number
+#     return almanac
+
+# # Assume seed numbers are on the first line of the file
+# with open('day5/sample5.txt', 'r') as file:
+#     mySeedNumbersLine = file.readline().strip()
+#     mySeedNumbers = list(map(int, mySeedNumbersLine.split(' ')[1:]))  # Skip the 'seeds:' part
+#     almanac_lines = file.readlines()
+
+# # Parse the almanac data
+# almanac = ParseTheAlmanac(almanac_lines)
+
+# # Solve the puzzle
+# min_location = SolveThePuzzle(almanac, mySeedNumbers)
+# print(min_location)
+
+from bisect import bisect_right
+
+def ParseTheMap(theMapLines):
+    myMapRanges = []
+    for aLine in theMapLines:
+        if aLine:  # Skip empty lines
+            myDestStart, mySrcStart, myLength = map(int, aLine.split())
+            myMapRanges.append((mySrcStart, mySrcStart + myLength, myDestStart))
+    myMapRanges.sort()
+    return myMapRanges
+
+def FindLocation(theSeed, theMaps):
+    for mapRanges in theMaps:
+        i = bisect_right(mapRanges, (theSeed,)) - 1
+        if i >= 0 and mapRanges[i][0] <= theSeed < mapRanges[i][1]:
+            theSeed = mapRanges[i][2] + (theSeed - mapRanges[i][0])
+    return theSeed
+
+# Read the input data from the file
+with open('day5/input5.txt', 'r') as file:
+    myLines = file.readlines()
+
+# Parse the seeds
+mySeedsLine = myLines.pop(0)
+mySeeds: list = list(map(int, mySeedsLine.split(':')[1].split()))
+
+# Parse the maps
+myMaps = []
+while myLines:
+    # Remove the map title line
+    myLines.pop(0)
+    # Get the map lines
+    myMapLines = []
+    while myLines and ':' not in myLines[0]:
+        myMapLines.append(myLines.pop(0).strip())
+    # Parse the map and add it to the list of maps
+    myMaps.append(ParseTheMap(myMapLines))
+
+# Find the minimum location number
+myMinLocation = min(FindLocation(aSeed, myMaps) for aSeed in mySeeds)
+
+print(myMinLocation)
