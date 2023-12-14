@@ -246,39 +246,36 @@ Here's a rough plan:
     Once all SEED numbers have been processed, find the lowest LOCATION number
     in the list of location numbers.
 
-    This should be the solution to the puzzle.
+    This should be the solution to the puzzle...
 """
 
 """ What I actually did
-1.  Read data from a file, parse it into a series of maps,
-    and then find the minimum location for a set of seeds.
-2.  ParseTheMap function:
+1.  Read data from a file, parsed it into a series of maps,
+    and then found the minimum location for a set of seeds.
+2.  ParseTheMap
     This function takes a list of map lines as input and then:
-    a)  for each line, it splits the line into three integers:
+    a)  for each line, splits the line into three integers:
             1. the start of the destination range
             2. the start of the source range, and
             3. the length of the range.
-    b)  it then appends a tuple representing the source range and the
+    b)  we then append a tuple representing the source range and the
         corresponding destination start to a list of map ranges.
     c)  the list of map ranges is sorted and returned.
-3.  FindLocation function:
+3.  FindLocation
     This function takes a seed and a list of maps as input.
     For each map:
     a) it finds the range that the seed falls into and
-    b) maps the seed to the corresponding destination.
+    b) map the seed to the corresponding destination.
 
     The final mapped seed is then returned.
 
-The script reads the input data from a file, parses the seeds and the maps, and
-then finds the minimum location for the seeds using the FindLocation function.
-
-The solution (minimum location) is then printed.
-
+The solution (minimum location) can now be printed.
 """
 
+from typing import List, Tuple
 from bisect import bisect_right
 
-def ParseTheMap(theMapLines):
+def ParseTheMap(theMapLines: List[str]) -> List[Tuple[int, int, int]]:
     myMapRanges = []
     for aLine in theMapLines:
         if aLine:  # Skip empty lines
@@ -287,34 +284,34 @@ def ParseTheMap(theMapLines):
     myMapRanges.sort()
     return myMapRanges
 
-def FindLocation(theSeed, theMaps):
-    for mapRanges in theMaps:
-        i = bisect_right(mapRanges, (theSeed,)) - 1
-        if i >= 0 and mapRanges[i][0] <= theSeed < mapRanges[i][1]:
-            theSeed = mapRanges[i][2] + (theSeed - mapRanges[i][0])
+def FindLocation(theSeed: int, theMaps: List[List[Tuple[int, int, int]]]) -> int:
+    for myMapRanges in theMaps:
+        i = bisect_right(myMapRanges, (theSeed,)) - 1
+        if i >= 0 and myMapRanges[i][0] <= theSeed < myMapRanges[i][1]:
+            theSeed = myMapRanges[i][2] + (theSeed - myMapRanges[i][0])
     return theSeed
 
 # Read the input data from the file
-with open('day5/input5.txt', 'r') as file:
-    myLines = file.readlines()
+with open('day5/input5.txt', 'r') as myFile:
+    myLines: List[str] = myFile.readlines()
 
 # Parse the seeds
 mySeedsLine = myLines.pop(0)
-mySeeds: list = list(map(int, mySeedsLine.split(':')[1].split()))
+mySeeds: List[int] = list(map(int, mySeedsLine.split(':')[1].split()))
 
 # Parse the maps
-myMaps = []
+myMaps: List[List[Tuple[int, int, int]]] = []
 while myLines:
     # Remove the map title line
     myLines.pop(0)
     # Get the map lines
-    myMapLines = []
+    myMapLines: List[str] = []
     while myLines and ':' not in myLines[0]:
         myMapLines.append(myLines.pop(0).strip())
     # Parse the map and add it to the list of maps
     myMaps.append(ParseTheMap(myMapLines))
 
 # Find the minimum location number
-myMinLocation = min(FindLocation(aSeed, myMaps) for aSeed in mySeeds)
+myMinLocation: int = min(FindLocation(aSeed, myMaps) for aSeed in mySeeds)
 
 print(myMinLocation)
