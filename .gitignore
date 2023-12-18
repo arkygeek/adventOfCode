@@ -1,4 +1,15 @@
 /jared1a.py
 sampleoutputs.txt
+<<<<<<< HEAD
 day5/package.json
 day5/package-lock.json
+=======
+.vscode/launch.json
+day1/input.txt
+day2/input2.txt
+day3/input3.txt
+day4/input4.txt
+day5/input5.txt
+day6/input6.txt
+day7/input7.txt
+>>>>>>> 6f56b12f55bc3310d7a9c0fbb9e280fdcbcc2042

@@ -15,9 +15,49 @@ The second range starts with seed number 55 and contains 13 values: 55, 56, ...,
 
 Now, rather than considering four seed numbers, you need to consider a total of 27 seed numbers.
 
-In the above example, the lowest location number can be obtained from seed number 82,
-which corresponds to soil 84, fertilizer 84, water 84, light 77, temperature 45,
-humidity 46, and location 46.
+        seeds: 79 14 55 13
+
+        seed-to-soil map:
+        50 98 2
+        52 50 48
+
+        soil-to-fertilizer map:
+        0 15 37
+        37 52 2
+        39 0 15
+
+        fertilizer-to-water map:
+        49 53 8
+        0 11 42
+        42 0 7
+        57 7 4
+
+        water-to-light map:
+        88 18 7
+        18 25 70
+
+        light-to-temperature map:
+        45 77 23
+        81 45 19
+        68 64 13
+
+        temperature-to-humidity map:
+        0 69 1
+        1 0 69
+
+        humidity-to-location map:
+        60 56 37
+        56 93 4
+
+In the above example, the lowest location number can be obtained from
+seed number 82              (read: which corresponds to ...)
+    ↳ soil 84
+        ↳ fertilizer 84
+            ↳ water 84
+                ↳ light 77
+                    ↳ temperature 45
+                        ↳ humidity 46
+                            ↳ location 46  <-- <-- <-- <-- OUR TARGET
 
 So, the lowest location number is 46.
 
@@ -43,6 +83,73 @@ What is the lowest location number that corresponds to any of the initial seed n
 
 """
 
+
+""" Some notes:
+
+Each seed number is transformed through a series of maps:
+(soil, fertilizer, water, light, temperature, humidity)
+to determine its corresponding location number.
+
+Each transformation is dependent on the result of the previous one (hence the term "cascading")
+
+
+
+
+To begin, lets look at the actual input data:
+
+
+First line of actual input data:
+seeds: 4088478806 114805397 289354458 164506173 1415635989 166087295 1652880954 340945548 3561206012 483360452 35205517 252097746 1117825174 279314434 3227452369 145640027 2160384960 149488635 2637152665 236791935
+
+seed data now comes in pairs (StartingSeedNumber, Range)
+lets look at the first pair: 4088478806 114805397
+this means that there are 114,805,397 seeds to examine from the first seed pair alone!
+what about second third and fourth pairs
+
+START NUM          HOW MANY?
+4088478806        114,805,397
+289354458         164,506,173
+1415635989        166,087,295
+1652880954        340,945,548
+3561206012        483,360,452
+35205517          252,097,746
+1117825174        279,314,434
+3227452369        145,640,027
+2160384960        149,488,635
+2637152665        236,791,935
+              + -------------
+  Total Seeds:  2,333,037,642
+
+-+-+-+ THIS IS GOING TO BE A HUGE DATASET +-+-+-
+
+(if we try to brute force it, it's going to take too long I think)
+
+P2=[]
+pairs=list(zip(seed[::2], seed[1::2]))
+for aStart, aSize in pairs:
+  # inclusive on the left, exclusive on the right
+  # e.g. [1,3) = [1,2]
+  # length of [a,b) = b-a
+  # [a,b) + [b,c) = [a,c)
+  R=[(aStart, aStart+aSize)]
+
+The notation [a, b) is a common mathematical notation used to denote an interval.
+
+In this context:
+
+[a, b) means the interval that includes a and all numbers up to but not including b. This is why the comment says "inclusive on the left, exclusive on the right".
+[1,3) is equivalent to [1,2] because it includes 1 and 2, but not 3.
+
+The length of [a,b) is b-a because it includes all numbers from a to b, but not b itself.
+[a,b) + [b,c) equals [a,c) because the two intervals are adjacent and their union forms a single interval from a to c.
+
+This notation is used to describe the ranges in the seed data.
+
+The square bracket [ means that the boundary is included in the interval, and
+the round bracket ) means that the boundary is not included.
+
+"""
+
 """ The Plan:
     1. Import the bisect_right function from the bisect module.
     2. Define a function ParseTheMap that takes a list of map lines, parses each line
@@ -55,48 +162,115 @@ What is the lowest location number that corresponds to any of the initial seed n
     7. Parse the maps, and then find the minimum final location across all seeds.
 
     I think... ¯\_(ツ)_/¯  lol
+
++-----------------------------+
+|  What went down in the end  |
++-----------------------------+------------------------------------------------+
+|                                                                              |
+| I think that having both solutions in the same script like this is a great   |
+| approach. I plan to implement this approach from day 6 onwards (if possible) |
+|                                                                              |
++------------------------------------------------------------------------------+
+
+Read unsplit puzzle input from file and use that input to solve both parts
+
++-----------------------+
+|  solve_first_puzzle   |
++-----------------------+
+This takes the puzzle input, splits it into chunks, and finds every seed value.
+We then iterate over each seed value and each chunk, finding all conversions
+(triplets of numbers) in each chunk.
+
+For each conversion, we check if the seed value is in the range defined by the
+start and delta of the conversion. If it is, we adjust the seed value by the
+difference between the destination and the start of the conversion.
+
+We keep track of the minimum seed value encountered and return this as the
+solution to the first part of the puzzle.
+
++-----------------------+
+|  solve_second_puzzle  |
++-----------------------+
+Here, we take the puzzle input and split it into chunks again, just like before.
+
+We then create a list of intervals from the seed values.
+
+Now, we iterate over each INTERVAL, checking its level...
+If the level is 8 we update the minimum location with the START of the interval.
+    OTHERWISE, we find all conversions in the chunk corresponding to the level of the interval.
+
+For each conversion, it checks if there's an overlap with the interval.
+
+If there is an overlap with the interval, we can split the interval at the start
+and end of the overlap, and adjust the interval by the difference between the
+destination and the start of the conversion.
+
+Now we can add the ADJUSTED interval to the list of intervals at the NEXT level.
+
+This gives the minimum location, the solution to the second part of the puzzle.
 """
 
-# NOTE: to self - at this point I've just pasted in the code from the first puzzle for reference
-from bisect import bisect_right
+import re  # support for regex
 
-def ParseTheMap(theMapLines):
-    myMapRanges = []
-    for aLine in theMapLines:
-        if aLine:  # Skip empty lines
-            myDestStart, mySrcStart, myLength = map(int, aLine.split())
-            myMapRanges.append((mySrcStart, mySrcStart + myLength, myDestStart))
-    myMapRanges.sort()
-    return myMapRanges
+with open('day5/input5.txt', 'r') as myFile:
+    myPuzzleInput = myFile.read()
 
-def FindLocation(theSeed, theMaps):
-    for mapRanges in theMaps:
-        i = bisect_right(mapRanges, (theSeed,)) - 1
-        if i >= 0 and mapRanges[i][0] <= theSeed < mapRanges[i][1]:
-            theSeed = mapRanges[i][2] + (theSeed - mapRanges[i][0])
-    return theSeed
 
-# Read the input data from the file
-with open('day5/input5.txt', 'r') as file:
-    myLines = file.readlines()
+def solve_first_puzzle(thePuzzleInput):
+    myPuzzleChunks = thePuzzleInput.split('\n\n')
+    # find all occurrences of one or more digits (\d+) in the string myPuzzleChunks[0]
+    mySeedValuesStr = re.findall(r'\d+', myPuzzleChunks[0])
+    myMinLocation = float('inf')
+    for eaSeedValue in map(int, mySeedValuesStr):
+        for eaChunk in myPuzzleChunks[1:]:
+            myAllConversions = re.findall(r'(\d+) (\d+) (\d+)', eaChunk)
+            for eaConversion in myAllConversions:
+                myDestination, myStart, myDelta = map(int, eaConversion)
+                if eaSeedValue in range(myStart, myStart + myDelta):
+                    eaSeedValue += myDestination - myStart
+                    break
+        myMinLocation = min(eaSeedValue, myMinLocation)
+    return myMinLocation
 
-# Parse the seeds
-mySeedsLine = myLines.pop(0)
-mySeeds: list = list(map(int, mySeedsLine.split(':')[1].split()))
 
-# Parse the maps
-myMaps = []
-while myLines:
-    # Remove the map title line
-    myLines.pop(0)
-    # Get the map lines
-    myMapLines = []
-    while myLines and ':' not in myLines[0]:
-        myMapLines.append(myLines.pop(0).strip())
-    # Parse the map and add it to the list of maps
-    myMaps.append(ParseTheMap(myMapLines))
+def solve_second_puzzle(thePuzzleInput):
+    myPuzzleChunks = thePuzzleInput.split('\n\n')
+    myIntervalList = []
+    for eaSeedValue in re.findall(r'(\d+) (\d+)', myPuzzleChunks[0]):
+        myStartValue, myDeltaValue = map(int, eaSeedValue)
+        myEndValue = myStartValue + myDeltaValue
+        myIntervalList.append((myStartValue, myEndValue, 1))
+    myMinLocation = float('inf')
+    while myIntervalList:
+        myStartValue, myEndValue, myLevel = myIntervalList.pop()
+        if myLevel == 8:
+            myMinLocation = min(myStartValue, myMinLocation)
+            continue
+        myAllConversions = re.findall(
+            r'(\d+) (\d+) (\d+)',
+            myPuzzleChunks[myLevel]
+        )
+        for eaConversion in myAllConversions:
+            myDestination, myStart, myDelta = map(int, eaConversion)
+            myEnd = myStart + myDelta
+            myDifference = myDestination - myStart
+            if myEndValue <= myStart or myEnd <= myStartValue:        # no overlap
+                continue
+            if myStartValue < myStart:                # split original interval at y1
+                myIntervalList.append((myStartValue, myStart, myLevel))
+                myStartValue = myStart
+            if myEnd < myEndValue:                    # split original interval at y2
+                myIntervalList.append((myEnd, myEndValue, myLevel))
+                myEndValue = myEnd
+            myIntervalList.append(
+                (myStartValue + myDifference,
+                 myEndValue + myDifference,
+                 myLevel + 1))
+            break        # make conversion and let pass to next nevel  <-- perfect overlap
+        else:
+            myIntervalList.append((myStartValue, myEndValue, myLevel + 1))
+    return myMinLocation
 
-# Find the minimum location number
-myMinLocation = min(FindLocation(aSeed, myMaps) for aSeed in mySeeds)
 
-print(myMinLocation)
+print('Part 1:', solve_first_puzzle(myPuzzleInput))
+print('Part 2:', solve_second_puzzle(myPuzzleInput))
