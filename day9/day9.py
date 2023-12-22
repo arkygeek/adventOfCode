@@ -20,15 +20,20 @@
 (5) Create a QApplication and an instance of the main window class and show the main window.
 
 """
+
+import requests
+from PyQt5.QtGui import QTextOption
 from PyQt5.QtWidgets import (
     QApplication,
-    QMainWindow,
-    QLabel,
     QComboBox,
+    QDialog,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
     QPushButton,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
-    QTextEdit
 )
 
 
@@ -66,6 +71,8 @@ class MainWindow(QMainWindow):
         self.sFileLabel = QLabel("Select file:")
         self.sFileCombo = QComboBox()
         self.sFileCombo.addItems(["day9/sample9.txt", "day9/input9.txt"])
+        self.sShowPuzzleButton = QPushButton("Show Puzzle")
+        self.sShowPuzzleButton.clicked.connect(self.show_puzzle)
         self.sShowDataButton = QPushButton("Show Data")
         self.sShowDataButton.clicked.connect(self.show_data)
         self.sSolvePuzzle1Button = QPushButton("Solve Part 1")
@@ -80,6 +87,7 @@ class MainWindow(QMainWindow):
         myLayout = QVBoxLayout()
         myLayout.addWidget(self.sFileLabel)
         myLayout.addWidget(self.sFileCombo)
+        myLayout.addWidget(self.sShowPuzzleButton)
         myLayout.addWidget(self.sShowDataButton)
         myLayout.addWidget(self.sSolvePuzzle1Button)
         myLayout.addWidget(self.sSolvePuzzle2Button)
@@ -96,6 +104,31 @@ class MainWindow(QMainWindow):
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
         self.sOutputText.setText(myData)
+
+    def show_puzzle(self):
+        url = "https://adventofcode.com/2023/day/9"
+        response = requests.get(url)
+        response.raise_for_status()  # Raise exception if the request failed
+
+        # Extract the puzzle text
+        start_marker = "--- Day 9: Mirage Maintenance ---"
+        end_marker = "To play, please identify yourself via one of these services:"
+        puzzle_text = response.text.partition(start_marker)[2].partition(end_marker)[0]
+
+        # Create a dialog box with a QTextEdit inside it
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Puzzle Text")
+        dialog.resize(600, 400)  # Adjust size to your preference
+
+        text_edit = QTextEdit()
+        text_edit.setReadOnly(True)
+        text_edit.setHtml(puzzle_text)  # Set the HTML text
+
+        layout = QVBoxLayout()
+        layout.addWidget(text_edit)
+        dialog.setLayout(layout)
+
+        dialog.exec_()
 
     def clear_output(self):
         self.sOutputText.clear()
@@ -120,14 +153,17 @@ class MainWindow(QMainWindow):
         self.sSolutionLabel.setText(f"Solution Part 2: {mySolution2}")
         self.sOutputText.setText("Logged output for Part 2...")
 
-app = QApplication([])
-window = MainWindow()
-window.show()
-app.exec_()
+ourApp = QApplication([])
+ourWindow = MainWindow()
+ourWindow.show()
+ourApp.exec_()
 
+ourPuzzle1 = PuzzleOne()
+ourPuzzle1.process_data()
+ourPuzzleOneAnswer = ourPuzzle1.calculate_answer()
+print(ourPuzzleOneAnswer)
 
-
-myPuzzle1 = PuzzleTwo()
-myPuzzle1.process_data()
-myPuzzleTwoAnswer = myPuzzle1.calculate_answer()
-print(myPuzzleTwoAnswer)
+ourPuzzle2 = PuzzleTwo()
+ourPuzzle2.process_data()
+ourPuzzleTwoAnswer = ourPuzzle2.calculate_answer()
+print(ourPuzzleTwoAnswer)
