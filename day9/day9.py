@@ -1,6 +1,26 @@
 # ambitious approach with PyQt5
 
 """
+Summary:
+We need to analyze a series of numerical sequences (referred to as "histories")
+and predict the next value in each sequence.
+
+Each sequence represents a history of a single value. To predict the next value,
+we need to create a new sequence from the differences between each pair of
+consecutive values in the original sequence.
+
+If the new sequence is not all zeroes, we repeat the process with the new sequence.
+
+Once we have a sequence of ALL ZEROES, we can extrapolate the next value in the
+original sequence by adding a zero to the end of the zero sequence and then
+filling in placeholders from the bottom up.
+
+The new value in each sequence is the result of increasing the value to its left
+by the value below it.
+
+The goal of the puzzle is to find the sum of the extrapolated values for all the
+histories in your report.
+
 (1) Import necessary PyQt5 modules.
 (2) Create a class for the main window that inherits from QMainWindow.
 (3) In the constructor of the main window class, set up the GUI:
@@ -18,6 +38,34 @@
     (d) Display the solution in the QLabel.
     (e) Display the logged output in the QTextEdit.
 (5) Create a QApplication and an instance of the main window class and show the main window.
+
+NOTES:
+The code will need to be able to deal with negative values
+There is a shortcut I think we can use that I noticed when looking at the output
+example:
+10  13  16  21  30  45  68
+   3   3   5   9  15  23
+     0   2   4   6   8
+       2   2   2   2
+         0   0   0
+
+rewritten:
+10  13  16  21  30  45  68
+ 3   3   5   9  15  23
+ 0   2   4   6   8
+ 2   2   2   2
+ 0   0   0
+
+so for part one we don't need to go past the first check because we are only
+worried about the one value! I bet that part 2 we need to add them all up haha
+
+
+
+
+
+
+
+
 
 """
 
@@ -42,13 +90,22 @@ class PuzzleOne:
         self.sData = theData
 
     def process_data(self):
-        # TODO: Implement logic for processing the data
-        pass
+        self.sData = [list(map(int, eaLine.split())) for eaLine in self.sData.split('\n') if eaLine.strip()]
+        # print(f"self.sData = {self.sData}")
 
-    def calculate_answer(self):
-        # TODO: Implement logic for calculating the answer
-        return 1
-
+    def calculate_answer(self) -> int:
+        myTotal = 0
+        for eaHistory in self.sData:
+            mySequences = [eaHistory]
+            # Generate sequences until the last element is equal to the second-to-last element
+            while mySequences[-1][1:] != mySequences[-1][:-1]:
+                mySequences.append([j-i for i, j in zip(mySequences[-1][:-1], mySequences[-1][1:])])
+            myExtrapolated = mySequences[-1][-1]
+            # Extrapolate the missing elements in the sequence
+            for eaSeq in reversed(mySequences[:-1]):
+                myExtrapolated += eaSeq[-1]
+            myTotal += myExtrapolated
+        return myTotal
 
 class PuzzleTwo:
     def __init__(self, theData):
@@ -56,13 +113,11 @@ class PuzzleTwo:
 
     def process_data(self):
         # TODO: Implement logic for processing the data
-
         pass
 
     def calculate_answer(self):
         # TODO: Implement logic for calculating the answer
         return 2
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -141,7 +196,7 @@ class MainWindow(QMainWindow):
         myPuzzle1.process_data()
         mySolution1 = myPuzzle1.calculate_answer()
         self.sSolutionLabel.setText(f"Solution Part 1: {mySolution1}")
-        self.sOutputText.setText("Logged output for Part 1...")
+        self.sOutputText.append(f"Solution Part 1: {mySolution1}")
 
     def solve2(self):
         myFilename = self.sFileCombo.currentText()
@@ -157,13 +212,3 @@ ourApp = QApplication([])
 ourWindow = MainWindow()
 ourWindow.show()
 ourApp.exec_()
-
-ourPuzzle1 = PuzzleOne()
-ourPuzzle1.process_data()
-ourPuzzleOneAnswer = ourPuzzle1.calculate_answer()
-print(ourPuzzleOneAnswer)
-
-ourPuzzle2 = PuzzleTwo()
-ourPuzzle2.process_data()
-ourPuzzleTwoAnswer = ourPuzzle2.calculate_answer()
-print(ourPuzzleTwoAnswer)
