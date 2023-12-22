@@ -1,7 +1,4 @@
-# ambitious approach with PyQt5
-
-"""
-Summary:
+""" this was my plan:
 We need to analyze a series of numerical sequences (referred to as "histories")
 and predict the next value in each sequence.
 
@@ -39,72 +36,52 @@ histories in your report.
     (e) Display the logged output in the QTextEdit.
 (5) Create a QApplication and an instance of the main window class and show the main window.
 
-NOTES:
-The code will need to be able to deal with negative values
-There is a shortcut I think we can use that I noticed when looking at the output
-example:
-10  13  16  21  30  45  68
-   3   3   5   9  15  23
-     0   2   4   6   8
-       2   2   2   2
-         0   0   0
-
-rewritten:
-10  13  16  21  30  45  68
- 3   3   5   9  15  23
- 0   2   4   6   8
- 2   2   2   2
- 0   0   0
-
-so for part one we don't need to go past the first check because we are only
-worried about the one value! I bet that part 2 we need to add them all up haha
-
-
-
-
-
-
-
-
-
 """
 
-import requests
-from PyQt5.QtGui import QTextOption
+import requests  # this is needed to grab the puzzle text from the website
+from typing import List
 from PyQt5.QtWidgets import (
     QApplication,
-    QComboBox,
+    QCheckBox,
     QDialog,
     QLabel,
     QMainWindow,
-    QMessageBox,
+    QComboBox,
     QPushButton,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
-
 class PuzzleOne:
-    def __init__(self, theData):
+    def __init__(self, theData: str, theOutputTextWidget: QTextEdit):
         self.sData = theData
+        self.sOutputText = theOutputTextWidget
 
-    def process_data(self):
+    def process_data(self, theDebugFlag: bool = False) -> None:
         self.sData = [list(map(int, eaLine.split())) for eaLine in self.sData.split('\n') if eaLine.strip()]
-        # print(f"self.sData = {self.sData}")
+        if theDebugFlag:
+                self.sOutputText.append(f"self.sData = {self.sData}")
 
-    def calculate_answer(self) -> int:
+    def calculate_answer(self, theDebugFlag: bool = False) -> int:
         myTotal = 0
-        for eaHistory in self.sData:
-            mySequences = [eaHistory]
+        for eachHistory in self.sData:
+            mySequences: List[List[int]] = [eachHistory]  # type: List[List[int]]
             # Generate sequences until the last element is equal to the second-to-last element
             while mySequences[-1][1:] != mySequences[-1][:-1]:
-                mySequences.append([j-i for i, j in zip(mySequences[-1][:-1], mySequences[-1][1:])])
-            myExtrapolated = mySequences[-1][-1]
+                mySequences.append(
+                    [next_element - current_element for current_element,
+                     next_element in zip(mySequences[-1][:-1], mySequences[-1][1:])
+                    ])
+            myExtrapolatedValue = mySequences[-1][-1]
             # Extrapolate the missing elements in the sequence
-            for eaSeq in reversed(mySequences[:-1]):
-                myExtrapolated += eaSeq[-1]
-            myTotal += myExtrapolated
+            for eachSeq in reversed(mySequences[:-1]):
+                myExtrapolatedValue += eachSeq[-1]
+            if theDebugFlag:
+                self.sOutputText.append(f"Extrapolated value: {myExtrapolatedValue}")
+            myTotal += myExtrapolatedValue
+        if theDebugFlag:
+            self.sOutputText.append(f"And these add up to {myTotal}")
         return myTotal
 
 class PuzzleTwo:
@@ -135,23 +112,32 @@ class MainWindow(QMainWindow):
         self.sSolvePuzzle2Button = QPushButton("Solve Part 2")
         self.sSolvePuzzle2Button.clicked.connect(self.solve2)
         self.sSolutionLabel = QLabel()
+        self.sSolutionLabel.setStyleSheet("font-size: 18px; color: darkblue;")
         self.sOutputText = QTextEdit()
+        self.sDebugCheckbox = QCheckBox("Debug", self)
         self.sClearButton = QPushButton("Clear Output")
         self.sClearButton.clicked.connect(self.clear_output)
 
+        # Create a vertical box layout
         myLayout = QVBoxLayout()
-        myLayout.addWidget(self.sFileLabel)
-        myLayout.addWidget(self.sFileCombo)
-        myLayout.addWidget(self.sShowPuzzleButton)
-        myLayout.addWidget(self.sShowDataButton)
-        myLayout.addWidget(self.sSolvePuzzle1Button)
-        myLayout.addWidget(self.sSolvePuzzle2Button)
-        myLayout.addWidget(self.sSolutionLabel)
-        myLayout.addWidget(self.sOutputText)
-        myLayout.addWidget(self.sClearButton)
 
+        # Add widgets to the layout
+        myLayout.addWidget(self.sFileLabel)  # Label for file selection
+        myLayout.addWidget(self.sFileCombo)  # Dropdown for file selection
+        myLayout.addWidget(self.sShowPuzzleButton)  # Button to get and show the puzzle
+        myLayout.addWidget(self.sShowDataButton)  # Button to show the data
+        myLayout.addWidget(self.sSolvePuzzle1Button)  # Button for part 1 of the puzzle
+        myLayout.addWidget(self.sSolvePuzzle2Button)  # Button for part 2 of the puzzle
+        myLayout.addWidget(self.sSolutionLabel)  # Label to display the solution
+        myLayout.addWidget(self.sOutputText)  # Text edit for output
+        myLayout.addWidget(self.sDebugCheckbox)  # Checkbox to enable/disable debug mode
+        myLayout.addWidget(self.sClearButton)  # Button to clear the output
+
+        # Create a widget to hold the layout
         myWidget = QWidget()
         myWidget.setLayout(myLayout)
+
+        # Set the widget as the central widget of the main window
         self.setCentralWidget(myWidget)
 
     def show_data(self):
@@ -192,9 +178,10 @@ class MainWindow(QMainWindow):
         myFilename = self.sFileCombo.currentText()
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
-        myPuzzle1 = PuzzleOne(myData)
-        myPuzzle1.process_data()
-        mySolution1 = myPuzzle1.calculate_answer()
+        myPuzzle1 = PuzzleOne(myData, self.sOutputText)  # Pass the output text widget to PuzzleOne
+        myDebugQCheckBoxStatus = self.sDebugCheckbox.isChecked()
+        myPuzzle1.process_data(myDebugQCheckBoxStatus)
+        mySolution1 = myPuzzle1.calculate_answer(myDebugQCheckBoxStatus)
         self.sSolutionLabel.setText(f"Solution Part 1: {mySolution1}")
         self.sOutputText.append(f"Solution Part 1: {mySolution1}")
 
