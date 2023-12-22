@@ -67,7 +67,7 @@ class PuzzleTwo:
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
+        # definition
         self.sFileLabel = QLabel("Select file:")
         self.sFileCombo = QComboBox()
         self.sFileCombo.addItems(["day9/sample9.txt", "day9/input9.txt"])
@@ -106,29 +106,29 @@ class MainWindow(QMainWindow):
         self.sOutputText.setText(myData)
 
     def show_puzzle(self):
-        url = "https://adventofcode.com/2023/day/9"
-        response = requests.get(url)
-        response.raise_for_status()  # Raise exception if the request failed
+        myUrl = "https://adventofcode.com/2023/day/9"
+        myResponse = requests.get(myUrl)
+        myResponse.raise_for_status()  # Raise exception if the request fails
 
         # Extract the puzzle text
-        start_marker = "--- Day 9: Mirage Maintenance ---"
-        end_marker = "To play, please identify yourself via one of these services:"
-        puzzle_text = response.text.partition(start_marker)[2].partition(end_marker)[0]
+        myStartMarker = "--- Day 9: Mirage Maintenance ---"
+        myEndMarker = "To play, please identify yourself via one of these services:"
+        puzzle_text = myResponse.text.partition(myStartMarker)[2].partition(myEndMarker)[0]
 
         # Create a dialog box with a QTextEdit inside it
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Puzzle Text")
-        dialog.resize(600, 400)  # Adjust size to your preference
+        myDialog = QDialog(self)
+        myDialog.setWindowTitle("Puzzle Text")
+        myDialog.resize(600, 400)  # Adjust size
 
-        text_edit = QTextEdit()
-        text_edit.setReadOnly(True)
-        text_edit.setHtml(puzzle_text)  # Set the HTML text
+        myTextEdit = QTextEdit()
+        myTextEdit.setReadOnly(True)
+        myTextEdit.setHtml(puzzle_text)
 
-        layout = QVBoxLayout()
-        layout.addWidget(text_edit)
-        dialog.setLayout(layout)
+        myLayout = QVBoxLayout()
+        myLayout.addWidget(myTextEdit)
+        myDialog.setLayout(myLayout)
 
-        dialog.exec_()
+        myDialog.exec_()
 
     def clear_output(self):
         self.sOutputText.clear()
