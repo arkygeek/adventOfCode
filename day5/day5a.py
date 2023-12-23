@@ -218,35 +218,28 @@ with open('day5/input5.txt', 'r') as myFile:
 
 def solve_first_puzzle(thePuzzleInput):
     # Split the puzzle input into chunks using two consecutive newlines
-    myPuzzleChunks = thePuzzleInput.split('\n\n')
-
     # Extract seed values as integers from the first chunk using regex
-    mySeedValuesStr = re.findall(r'\d+', myPuzzleChunks[0])
-
     # Initialize minimum location to positive infinity
-    myMinLocation = float('inf')
-
     # Iterate through each seed value
-    for eaSeedValue in map(int, mySeedValuesStr):
         # Iterate through each conversion rule in subsequent chunks
-        for eaChunk in myPuzzleChunks[1:]:
             # Extract all conversion rules from the chunk
-            myAllConversions = re.findall(r'(\d+) (\d+) (\d+)', eaChunk)
-
             # Iterate through each conversion rule
+                # Check if the seed value falls within the current conversion range
+                    # Update the seed value based on the conversion rule
+        # Update the minimum location based on the modified seed value
+    # Return the minimum location
+    myPuzzleChunks = thePuzzleInput.split('\n\n')
+    mySeedValuesStr = re.findall(r'\d+', myPuzzleChunks[0])
+    myMinLocation = float('inf')
+    for eaSeedValue in map(int, mySeedValuesStr):
+        for eaChunk in myPuzzleChunks[1:]:
+            myAllConversions = re.findall(r'(\d+) (\d+) (\d+)', eaChunk)
             for eaConversion in myAllConversions:
                 myDestination, myStart, myDelta = map(int, eaConversion)
-
-                # Check if the seed value falls within the current conversion range
                 if eaSeedValue in range(myStart, myStart + myDelta):
-                    # Update the seed value based on the conversion rule
                     eaSeedValue += myDestination - myStart
                     break
-
-        # Update the minimum location based on the modified seed value
         myMinLocation = min(eaSeedValue, myMinLocation)
-
-    # Return the minimum location
     return myMinLocation
 
 def solve_second_puzzle(thePuzzleInput):
