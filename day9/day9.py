@@ -75,7 +75,7 @@ class PuzzleOne:
                     ])
             myExtrapolatedValue = mySequences[-1][-1]
             # Extrapolate the missing elements in the sequence
-            """
+            """ explanation: for eachSeq in reversed(mySequences[:-1]):
             mySequences[:-1]: This part creates a slice of the list mySequences.
                               The slice starts from the beginning of the list (:)
                               and goes up to, but does not include, the last element ([:-1]).

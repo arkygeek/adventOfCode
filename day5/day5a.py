@@ -210,67 +210,109 @@ Now we can add the ADJUSTED interval to the list of intervals at the NEXT level.
 This gives the minimum location, the solution to the second part of the puzzle.
 """
 
-import re  # support for regex
+import re  # Support for regular expressions
 
+# Read the puzzle input from the file
 with open('day5/input5.txt', 'r') as myFile:
     myPuzzleInput = myFile.read()
 
-
 def solve_first_puzzle(thePuzzleInput):
+    # Split the puzzle input into chunks using two consecutive newlines
     myPuzzleChunks = thePuzzleInput.split('\n\n')
-    # find all occurrences of one or more digits (\d+) in the string myPuzzleChunks[0]
+
+    # Extract seed values as integers from the first chunk using regex
     mySeedValuesStr = re.findall(r'\d+', myPuzzleChunks[0])
+
+    # Initialize minimum location to positive infinity
     myMinLocation = float('inf')
+
+    # Iterate through each seed value
     for eaSeedValue in map(int, mySeedValuesStr):
+        # Iterate through each conversion rule in subsequent chunks
         for eaChunk in myPuzzleChunks[1:]:
+            # Extract all conversion rules from the chunk
             myAllConversions = re.findall(r'(\d+) (\d+) (\d+)', eaChunk)
+
+            # Iterate through each conversion rule
             for eaConversion in myAllConversions:
                 myDestination, myStart, myDelta = map(int, eaConversion)
+
+                # Check if the seed value falls within the current conversion range
                 if eaSeedValue in range(myStart, myStart + myDelta):
+                    # Update the seed value based on the conversion rule
                     eaSeedValue += myDestination - myStart
                     break
+
+        # Update the minimum location based on the modified seed value
         myMinLocation = min(eaSeedValue, myMinLocation)
+
+    # Return the minimum location
     return myMinLocation
 
-
 def solve_second_puzzle(thePuzzleInput):
+    # Split the puzzle input into chunks using two consecutive newlines
     myPuzzleChunks = thePuzzleInput.split('\n\n')
+
+    # Initialize an interval list with the initial seed values
+    # Iterate over all matches of two numbers separated by a space in the first chunk of the puzzle input
+        # Convert the matched values to integers and assign them to myStartValue and myDeltaValue
+        # Calculate the end value of the interval by adding the delta to the start value
+        # Append the interval (start value, end value, level) to myIntervalList
     myIntervalList = []
     for eaSeedValue in re.findall(r'(\d+) (\d+)', myPuzzleChunks[0]):
         myStartValue, myDeltaValue = map(int, eaSeedValue)
         myEndValue = myStartValue + myDeltaValue
         myIntervalList.append((myStartValue, myEndValue, 1))
+
+    # Initialize the minimum location to positive infinity
     myMinLocation = float('inf')
+
+    # Process intervals in the interval list
     while myIntervalList:
+        # Pop an interval from the list
         myStartValue, myEndValue, myLevel = myIntervalList.pop()
+
+        # If the current level is the target level (8), update the minimum location and continue
         if myLevel == 8:
             myMinLocation = min(myStartValue, myMinLocation)
             continue
-        myAllConversions = re.findall(
-            r'(\d+) (\d+) (\d+)',
-            myPuzzleChunks[myLevel]
-        )
+
+        # Extract all conversion rules for the current level from the puzzle input
+        myAllConversions = re.findall(r'(\d+) (\d+) (\d+)', myPuzzleChunks[myLevel])
+
+        # Iterate through each conversion rule
         for eaConversion in myAllConversions:
+            # Parse the destination, start, and delta values from the conversion rule
             myDestination, myStart, myDelta = map(int, eaConversion)
+            # Calculate the end value and the difference for the conversion
             myEnd = myStart + myDelta
             myDifference = myDestination - myStart
-            if myEndValue <= myStart or myEnd <= myStartValue:        # no overlap
+
+            # If the conversion does not overlap with the current interval, skip it
+            if myEndValue <= myStart or myEnd <= myStartValue:
                 continue
-            if myStartValue < myStart:                # split original interval at y1
+
+            # If the conversion starts after the current interval, split the interval and update the start value
+            if myStartValue < myStart:
                 myIntervalList.append((myStartValue, myStart, myLevel))
                 myStartValue = myStart
-            if myEnd < myEndValue:                    # split original interval at y2
+
+            # If the conversion ends before the current interval, split the interval and update the end value
+            if myEnd < myEndValue:
                 myIntervalList.append((myEnd, myEndValue, myLevel))
                 myEndValue = myEnd
-            myIntervalList.append(
-                (myStartValue + myDifference,
-                 myEndValue + myDifference,
-                 myLevel + 1))
-            break        # make conversion and let pass to next nevel  <-- perfect overlap
+
+            # Apply the conversion to the current interval and add the new interval to the list
+            myIntervalList.append((myStartValue + myDifference, myEndValue + myDifference, myLevel + 1))
+            break  # Stop checking other conversions for this interval
+
         else:
+            # If no conversion was applied, add the original interval back to the list with the level incremented
             myIntervalList.append((myStartValue, myEndValue, myLevel + 1))
+
+    # Return the minimum location
     return myMinLocation
 
-
+# Print the results for both parts of the puzzle
 print('Part 1:', solve_first_puzzle(myPuzzleInput))
 print('Part 2:', solve_second_puzzle(myPuzzleInput))
