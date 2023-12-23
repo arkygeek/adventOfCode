@@ -245,7 +245,6 @@ def solve_first_puzzle(thePuzzleInput):
 def solve_second_puzzle(thePuzzleInput):
     # Split the puzzle input into chunks using two consecutive newlines
     myPuzzleChunks = thePuzzleInput.split('\n\n')
-
     # Initialize an interval list with the initial seed values
     # Iterate over all matches of two numbers separated by a space in the first chunk of the puzzle input
         # Convert the matched values to integers and assign them to myStartValue and myDeltaValue
@@ -263,46 +262,38 @@ def solve_second_puzzle(thePuzzleInput):
     # Process intervals in the interval list
     while myIntervalList:
         # Pop an interval from the list
-        myStartValue, myEndValue, myLevel = myIntervalList.pop()
-
         # If the current level is the target level (8), update the minimum location and continue
+        # Extract all conversion rules for the current level from the puzzle input
+        # Iterate through each conversion rule
+            # Parse the destination, start, and delta values from the conversion rule
+            # Calculate the end value and the difference for the conversion
+            # If the conversion does not overlap with the current interval, skip it
+            # If the conversion starts after the current interval, split the interval and update the start value
+            # If the conversion ends before the current interval, split the interval and update the end value
+            # Apply the conversion to the current interval and add the new interval to the list
+            # Stop checking other conversions for this interval
+            # If no conversion was applied, add the original interval back to the list with the level incremented
+        myStartValue, myEndValue, myLevel = myIntervalList.pop()
         if myLevel == 8:
             myMinLocation = min(myStartValue, myMinLocation)
             continue
-
-        # Extract all conversion rules for the current level from the puzzle input
         myAllConversions = re.findall(r'(\d+) (\d+) (\d+)', myPuzzleChunks[myLevel])
-
-        # Iterate through each conversion rule
         for eaConversion in myAllConversions:
-            # Parse the destination, start, and delta values from the conversion rule
             myDestination, myStart, myDelta = map(int, eaConversion)
-            # Calculate the end value and the difference for the conversion
             myEnd = myStart + myDelta
             myDifference = myDestination - myStart
-
-            # If the conversion does not overlap with the current interval, skip it
             if myEndValue <= myStart or myEnd <= myStartValue:
                 continue
-
-            # If the conversion starts after the current interval, split the interval and update the start value
             if myStartValue < myStart:
                 myIntervalList.append((myStartValue, myStart, myLevel))
                 myStartValue = myStart
-
-            # If the conversion ends before the current interval, split the interval and update the end value
             if myEnd < myEndValue:
                 myIntervalList.append((myEnd, myEndValue, myLevel))
                 myEndValue = myEnd
-
-            # Apply the conversion to the current interval and add the new interval to the list
             myIntervalList.append((myStartValue + myDifference, myEndValue + myDifference, myLevel + 1))
-            break  # Stop checking other conversions for this interval
-
+            break
         else:
-            # If no conversion was applied, add the original interval back to the list with the level incremented
             myIntervalList.append((myStartValue, myEndValue, myLevel + 1))
-
     # Return the minimum location
     return myMinLocation
 
