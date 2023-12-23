@@ -64,14 +64,14 @@ class PuzzleOne:
                 self.sOutputText.append(f"self.sData = {self.sData}")
 
     def calculate_answer(self, theDebugFlag: bool = False) -> int:
-        myTotal = 0
+        myTotal: int = 0
         for eachHistory in self.sData:
             mySequences: List[List[int]] = [eachHistory]  # type: List[List[int]]
             # Generate sequences until the last element is equal to the second-to-last element
             while mySequences[-1][1:] != mySequences[-1][:-1]:
                 mySequences.append(
-                    [next_element - current_element for current_element,
-                     next_element in zip(mySequences[-1][:-1], mySequences[-1][1:])
+                    [myNextElement - current_element for current_element,
+                     myNextElement in zip(mySequences[-1][:-1], mySequences[-1][1:])
                     ])
             myExtrapolatedValue = mySequences[-1][-1]
             # Extrapolate the missing elements in the sequence
