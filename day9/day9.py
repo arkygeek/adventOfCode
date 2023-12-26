@@ -100,21 +100,6 @@ class PuzzleOne:
             self.sOutputText.append(f"And these add up to {myTotal}")
         return myTotal
 
-# import requests
-import time
-from typing import List
-from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QDialog,
-    QLabel,
-    QMainWindow,
-    QComboBox,
-    QPushButton,
-    QTextEdit,
-    QVBoxLayout,
-    QWidget,
-)
 
 class PuzzleTwo:
     def __init__(self, theData: str, theOutputTextWidget: QTextEdit):
@@ -134,11 +119,12 @@ class PuzzleTwo:
 
             # Generate sequences of differences
             while len(eaSequence[-1]) > 1:
-                eaSequence.append(
-                    [nextVal - currentVal for currentVal,
-                     nextVal in zip(eaSequence[-1][:-1], eaSequence[-1][1:])
-                    ]
-                )
+                new_sequence = [nextVal - currentVal for currentVal, nextVal in zip(eaSequence[-1][:-1], eaSequence[-1][1:])]
+                eaSequence.append(new_sequence)
+
+                # If all differences are zero, break the loop
+                if all(val == 0 for val in new_sequence):
+                    break
 
             # Extrapolate backward
             for evSeqIndex in range(len(eaSequence) - 2, -1, -1):
@@ -250,7 +236,7 @@ class MainWindow(QMainWindow):
 
     def solve1(self):
         # Record the start time
-        startTime = time.time()
+        myStartTime = time.time()
 
         myFilename = self.sFileCombo.currentText()
         with open(myFilename) as myRawFile:
@@ -263,13 +249,15 @@ class MainWindow(QMainWindow):
         self.sOutputText.append(f"Solution Part 1: {mySolution1}")
 
         # Record the end time
-        endTime = time.time()
+        myEndTime = time.time()
 
         # Calculate and print the execution time
-        executionTime = endTime - startTime
-        self.sOutputText.append(f"Execution time: {executionTime} seconds")
+        myExecutionTime = myEndTime - myStartTime
+        self.sOutputText.append(f"Execution time: {myExecutionTime} seconds")
 
     def solve2(self):
+        # Record the start time to measure code speed
+        myStartTime = time.time()
         myFilename = self.sFileCombo.currentText()
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
@@ -279,6 +267,12 @@ class MainWindow(QMainWindow):
         mySolution2 = myPuzzle2.calculate_answer(myDebugQCheckBoxStatus)
         self.sSolutionLabel.setText(f"Solution Part 2: {mySolution2}")
         self.sOutputText.append(f"Solution Part 2: {mySolution2}")
+        # Record the end time
+        myEndTime = time.time()
+
+        # Calculate and print the execution time
+        myExecutionTime = myEndTime - myStartTime
+        self.sOutputText.append(f"Execution time: {myExecutionTime} seconds")
 
 ourApp = QApplication([])
 ourWindow = MainWindow()
