@@ -39,6 +39,7 @@ histories in your report.
 """
 
 import requests  # this is needed to grab the puzzle text from the website
+import time
 from typing import List
 from PyQt5.QtWidgets import (
     QApplication,
@@ -100,20 +101,66 @@ class PuzzleOne:
         return myTotal
 
 class PuzzleTwo:
-    def __init__(self, theData):
+    def __init__(self, theData: str, theOutputTextWidget: QTextEdit):
         self.sData = theData
+        self.sOutputText = theOutputTextWidget
 
-    def process_data(self):
-        # TODO: Implement logic for processing the data
-        pass
+    def process_data(self, theDebugFlag: bool = False) -> None:
+        self.sData = [list(map(int, eaLine.split())) for eaLine in self.sData.split('\n') if eaLine.strip()]
+        if theDebugFlag:
+                self.sOutputText.append(f"self.sData = {self.sData}")
 
-    def calculate_answer(self):
-        # TODO: Implement logic for calculating the answer
-        return 2
+    def calculate_answer(self, theDebugFlag: bool = False) -> int:
+        # Initialize the total sum of extrapolated values
+        myTotal: int = 0
+
+        # Iterate over each history in the data
+        for eachHistory in self.sData:
+            # Initialize the list of sequences with the current history
+            mySequences: List[List[int]] = [eachHistory]  # type: List[List[int]]
+
+            # Generate sequences of differences until the last sequence is entirely zero
+            while any(mySequences[-1]):
+                # Append a new sequence to the list, where each element is the difference
+                # between the corresponding element and the next one in the previous sequence
+                mySequences.append(
+                    [myNextElement - current_element for current_element,
+                     myNextElement in zip(mySequences[-1][:-1], mySequences[-1][1:])
+                    ])
+
+            # Extrapolate the missing elements in the sequence
+            # Start from the second-to-last sequence and go up to the first sequence
+            for i in range(len(mySequences) - 2, -1, -1):
+                # Insert a new first element in the current sequence, which is the difference
+                # between the first element of the next sequence and the first element of the current sequence
+                mySequences[i].insert(0, mySequences[i+1][0] - mySequences[i][0])
+
+            # The extrapolated value is the first element of the first sequence
+            myExtrapolatedValue = mySequences[0][0]
+
+            # If the debug flag is set, append the extrapolated value to the output text and print it
+            if theDebugFlag:
+                self.sOutputText.append(f"Extrapolated value: {myExtrapolatedValue}")
+                print(f"Extrapolated value: {myExtrapolatedValue}")
+
+            # Add the extrapolated value to the total sum
+            myTotal += myExtrapolatedValue
+
+        # If the debug flag is set, append the total sum to the output text and print it
+        if theDebugFlag:
+            self.sOutputText.append(f"And these add up to {myTotal}")
+            print(f"And these add up to {myTotal}")
+
+        # Return the total sum of extrapolated values
+        return myTotal
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        # Set the window's size to be twice as wide
+        self.resize(self.width() * 2, self.height())
+
         # definition
         self.sFileLabel = QLabel("Select file:")
         self.sFileCombo = QComboBox()
@@ -132,6 +179,14 @@ class MainWindow(QMainWindow):
         self.sDebugCheckbox = QCheckBox("Debug", self)
         self.sClearButton = QPushButton("Clear Output")
         self.sClearButton.clicked.connect(self.clear_output)
+
+        # Set a fixed width for the buttons
+        buttonWidth = 100
+        self.sShowPuzzleButton.setFixedWidth(buttonWidth)
+        self.sShowDataButton.setFixedWidth(buttonWidth)
+        self.sSolvePuzzle1Button.setFixedWidth(buttonWidth)
+        self.sSolvePuzzle2Button.setFixedWidth(buttonWidth)
+        self.sClearButton.setFixedWidth(buttonWidth)
 
         # Create a vertical box layout
         myLayout = QVBoxLayout()
@@ -189,7 +244,11 @@ class MainWindow(QMainWindow):
     def clear_output(self):
         self.sOutputText.clear()
 
+
     def solve1(self):
+        # Record the start time
+        startTime = time.time()
+
         myFilename = self.sFileCombo.currentText()
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
@@ -200,15 +259,23 @@ class MainWindow(QMainWindow):
         self.sSolutionLabel.setText(f"Solution Part 1: {mySolution1}")
         self.sOutputText.append(f"Solution Part 1: {mySolution1}")
 
+        # Record the end time
+        endTime = time.time()
+
+        # Calculate and print the execution time
+        executionTime = endTime - startTime
+        self.sOutputText.append(f"Execution time: {executionTime} seconds")
+
     def solve2(self):
         myFilename = self.sFileCombo.currentText()
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
-        myPuzzle2 = PuzzleTwo(myData)
-        myPuzzle2.process_data()
-        mySolution2 = myPuzzle2.calculate_answer()
+        myPuzzle2 = PuzzleTwo(myData, self.sOutputText)  # Pass the output text widget to PuzzleTwo
+        myDebugQCheckBoxStatus = self.sDebugCheckbox.isChecked()
+        myPuzzle2.process_data(myDebugQCheckBoxStatus)
+        mySolution2 = myPuzzle2.calculate_answer(myDebugQCheckBoxStatus)
         self.sSolutionLabel.setText(f"Solution Part 2: {mySolution2}")
-        self.sOutputText.setText("Logged output for Part 2...")
+        self.sOutputText.setText(f"Solution Part 2: {mySolution2}")
 
 ourApp = QApplication([])
 ourWindow = MainWindow()
