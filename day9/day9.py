@@ -100,6 +100,22 @@ class PuzzleOne:
             self.sOutputText.append(f"And these add up to {myTotal}")
         return myTotal
 
+# import requests
+import time
+from typing import List
+from PyQt5.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QDialog,
+    QLabel,
+    QMainWindow,
+    QComboBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
 class PuzzleTwo:
     def __init__(self, theData: str, theOutputTextWidget: QTextEdit):
         self.sData = theData
@@ -108,51 +124,39 @@ class PuzzleTwo:
     def process_data(self, theDebugFlag: bool = False) -> None:
         self.sData = [list(map(int, eaLine.split())) for eaLine in self.sData.split('\n') if eaLine.strip()]
         if theDebugFlag:
-                self.sOutputText.append(f"self.sData = {self.sData}")
+            self.sOutputText.append(f"self.sData = {self.sData}")
 
     def calculate_answer(self, theDebugFlag: bool = False) -> int:
-        # Initialize the total sum of extrapolated values
-        myTotal: int = 0
+        myTotal = 0
 
-        # Iterate over each history in the data
-        for eachHistory in self.sData:
-            # Initialize the list of sequences with the current history
-            mySequences: List[List[int]] = [eachHistory]  # type: List[List[int]]
+        for evHistory in self.sData:
+            eaSequence = [evHistory]
 
-            # Generate sequences of differences until the last sequence is entirely zero
-            while any(mySequences[-1]):
-                # Append a new sequence to the list, where each element is the difference
-                # between the corresponding element and the next one in the previous sequence
-                mySequences.append(
-                    [myNextElement - current_element for current_element,
-                     myNextElement in zip(mySequences[-1][:-1], mySequences[-1][1:])
-                    ])
+            # Generate sequences of differences
+            while len(eaSequence[-1]) > 1:
+                eaSequence.append(
+                    [nextVal - currentVal for currentVal,
+                     nextVal in zip(eaSequence[-1][:-1], eaSequence[-1][1:])
+                    ]
+                )
 
-            # Extrapolate the missing elements in the sequence
-            # Start from the second-to-last sequence and go up to the first sequence
-            for i in range(len(mySequences) - 2, -1, -1):
-                # Insert a new first element in the current sequence, which is the difference
-                # between the first element of the next sequence and the first element of the current sequence
-                mySequences[i].insert(0, mySequences[i+1][0] - mySequences[i][0])
+            # Extrapolate backward
+            for evSeqIndex in range(len(eaSequence) - 2, -1, -1):
+                eaSequence[evSeqIndex] = [eaSequence[evSeqIndex][0] - eaSequence[evSeqIndex+1][0]] + eaSequence[evSeqIndex]
 
-            # The extrapolated value is the first element of the first sequence
-            myExtrapolatedValue = mySequences[0][0]
+            # Add extrapolated value to total
+            myTotal += eaSequence[0][0]
 
-            # If the debug flag is set, append the extrapolated value to the output text and print it
             if theDebugFlag:
-                self.sOutputText.append(f"Extrapolated value: {myExtrapolatedValue}")
-                print(f"Extrapolated value: {myExtrapolatedValue}")
+                self.sOutputText.append(f"Extrapolated value: {eaSequence[0][0]}")
+                for seqIndex, seq in enumerate(eaSequence):
+                    self.sOutputText.append(' '.join(map(str, seq)).rjust(len(' '.join(map(str, seq))) + seqIndex * 2))
 
-            # Add the extrapolated value to the total sum
-            myTotal += myExtrapolatedValue
-
-        # If the debug flag is set, append the total sum to the output text and print it
         if theDebugFlag:
-            self.sOutputText.append(f"And these add up to {myTotal}")
-            print(f"And these add up to {myTotal}")
+            self.sOutputText.append(f"Total: {myTotal}")
 
-        # Return the total sum of extrapolated values
         return myTotal
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -181,12 +185,12 @@ class MainWindow(QMainWindow):
         self.sClearButton.clicked.connect(self.clear_output)
 
         # Set a fixed width for the buttons
-        buttonWidth = 100
-        self.sShowPuzzleButton.setFixedWidth(buttonWidth)
-        self.sShowDataButton.setFixedWidth(buttonWidth)
-        self.sSolvePuzzle1Button.setFixedWidth(buttonWidth)
-        self.sSolvePuzzle2Button.setFixedWidth(buttonWidth)
-        self.sClearButton.setFixedWidth(buttonWidth)
+        myButtonWidth = 100
+        self.sShowPuzzleButton.setFixedWidth(myButtonWidth)
+        self.sShowDataButton.setFixedWidth(myButtonWidth)
+        self.sSolvePuzzle1Button.setFixedWidth(myButtonWidth)
+        self.sSolvePuzzle2Button.setFixedWidth(myButtonWidth)
+        self.sClearButton.setFixedWidth(myButtonWidth)
 
         # Create a vertical box layout
         myLayout = QVBoxLayout()
@@ -219,7 +223,7 @@ class MainWindow(QMainWindow):
     def show_puzzle(self):
         myUrl = "https://adventofcode.com/2023/day/9"
         myResponse = requests.get(myUrl)
-        myResponse.raise_for_status()  # Raise exception if the request fails
+        myResponse.raise_for_status()  # Raise an exception if the request fails
 
         # Extract the puzzle text
         myStartMarker = "--- Day 9: Mirage Maintenance ---"
@@ -243,7 +247,6 @@ class MainWindow(QMainWindow):
 
     def clear_output(self):
         self.sOutputText.clear()
-
 
     def solve1(self):
         # Record the start time
@@ -275,7 +278,7 @@ class MainWindow(QMainWindow):
         myPuzzle2.process_data(myDebugQCheckBoxStatus)
         mySolution2 = myPuzzle2.calculate_answer(myDebugQCheckBoxStatus)
         self.sSolutionLabel.setText(f"Solution Part 2: {mySolution2}")
-        self.sOutputText.setText(f"Solution Part 2: {mySolution2}")
+        self.sOutputText.append(f"Solution Part 2: {mySolution2}")
 
 ourApp = QApplication([])
 ourWindow = MainWindow()
