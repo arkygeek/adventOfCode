@@ -25,7 +25,7 @@ class PuzzleOne:
     def __init__(self, theData: str, theOutputTextWidget: QTextEdit):
         self.sData = theData
         self.sOutputText = theOutputTextWidget
-        self.pipe_map = {
+        self.sPipeMap = {
             '|': ['N', 'S'],
             '-': ['E', 'W'],
             'L': ['N', 'E'],
@@ -126,23 +126,23 @@ class MainWindow(QMainWindow):
 
         if self.sDebugCheckbox.isChecked():
             # Create a new QTextCharFormat and set its color
-            red_format = QTextCharFormat()
-            red_format.setForeground(QColor("red"))
+            myRedFormat = QTextCharFormat()
+            myRedFormat.setForeground(QColor("red"))
 
             # Create a default QTextCharFormat
-            default_format = QTextCharFormat()
+            myDefaultFormat = QTextCharFormat()
 
             # Create a QTextCursor on the QTextEdit's document
-            cursor = QTextCursor(self.sOutputText.document())
+            myCursor = QTextCursor(self.sOutputText.document())
 
             # Insert the text character by character
-            for char in myData:
-                if char == 'S':
+            for eaChar in myData:
+                if eaChar == 'S':
                     # If the character is 'S', use the red format
-                    cursor.insertText(char, red_format)
+                    myCursor.insertText(eaChar, myRedFormat)
                 else:
                     # Otherwise, insert the text normally
-                    cursor.insertText(char, default_format)
+                    myCursor.insertText(eaChar, myDefaultFormat)
         else:
             self.sOutputText.setText(myData)
         self.sOutputText.update()
