@@ -1,6 +1,12 @@
 import requests  # this is needed to grab the puzzle text from the website
 import time
 from typing import List
+from PyQt5.QtGui import (
+    QFont,
+    QTextCharFormat,
+    QTextCursor,
+    QColor
+)
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -15,15 +21,26 @@ from PyQt5.QtWidgets import (
 )
 
 class PuzzleOne:
+
     def __init__(self, theData: str, theOutputTextWidget: QTextEdit):
         self.sData = theData
         self.sOutputText = theOutputTextWidget
+        self.pipe_map = {
+            '|': ['N', 'S'],
+            '-': ['E', 'W'],
+            'L': ['N', 'E'],
+            'J': ['N', 'W'],
+            '7': ['S', 'W'],
+            'F': ['S', 'E'],
+            'S': ['N', 'S', 'E', 'W']  # Assuming 'S' can connect in any direction
+        }
 
     def process_data(self, theDebugFlag: bool = False) -> None:
-        self.sData = [list(map(int, eaLine.split())) for eaLine in self.sData.split('\n') if eaLine.strip()]
+        self.sData = [list(eaLine) for eaLine in self.sData.split('\n') if eaLine.strip()]
         if theDebugFlag:
-                self.sOutputText.append(f"self.sData = {self.sData}")
-
+            for line in self.sData:
+                self.sOutputText.setFont(QFont("Courier", 10))
+                self.sOutputText.append(str(line))
     def calculate_answer(self, theDebugFlag: bool = False) -> int:
         myTotal = 0
         return myTotal
@@ -104,7 +121,31 @@ class MainWindow(QMainWindow):
         myFilename = self.sFileCombo.currentText()
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
-        self.sOutputText.setText(myData)
+
+        self.sOutputText.setFont(QFont("Courier", 10))
+
+        if self.sDebugCheckbox.isChecked():
+            # Create a new QTextCharFormat and set its color
+            red_format = QTextCharFormat()
+            red_format.setForeground(QColor("red"))
+
+            # Create a default QTextCharFormat
+            default_format = QTextCharFormat()
+
+            # Create a QTextCursor on the QTextEdit's document
+            cursor = QTextCursor(self.sOutputText.document())
+
+            # Insert the text character by character
+            for char in myData:
+                if char == 'S':
+                    # If the character is 'S', use the red format
+                    cursor.insertText(char, red_format)
+                else:
+                    # Otherwise, insert the text normally
+                    cursor.insertText(char, default_format)
+        else:
+            self.sOutputText.setText(myData)
+        self.sOutputText.update()
 
     def show_puzzle(self):
         myUrl = "https://adventofcode.com/2023/day/10"
@@ -173,6 +214,7 @@ class MainWindow(QMainWindow):
         # Calculate and print the execution time
         myExecutionTime = myEndTime - myStartTime
         self.sOutputText.append(f"Execution time: {myExecutionTime} seconds")
+
 
 ourApp = QApplication([])
 ourWindow = MainWindow()
