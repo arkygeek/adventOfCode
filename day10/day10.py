@@ -1,23 +1,27 @@
+import glob
+import os
 import requests  # this is needed to grab the puzzle text from the website
 import time
+
+from collections import deque
 from typing import List
 from PyQt5.QtGui import (
-    QFont,
-    QTextCharFormat,
-    QTextCursor,
-    QColor
+        QFont,
+        QTextCharFormat,
+        QTextCursor,
+        QColor
 )
 from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QDialog,
-    QLabel,
-    QMainWindow,
-    QComboBox,
-    QPushButton,
-    QTextEdit,
-    QVBoxLayout,
-    QWidget,
+        QApplication,
+        QCheckBox,
+        QDialog,
+        QLabel,
+        QMainWindow,
+        QComboBox,
+        QPushButton,
+        QTextEdit,
+        QVBoxLayout,
+        QWidget,
 )
 
 class PuzzleOne:
@@ -35,15 +39,101 @@ class PuzzleOne:
             'S': ['N', 'S', 'E', 'W']  # Assuming 'S' can connect in any direction
         }
 
+    def find_start(self):
+        for eaRow, eaLine in enumerate(self.sData): # remember that the enumerate object
+            # yields pairs containing a count (from start, which defaults to 0) and a value
+            # yielded by the iterable argument.
+            # Enumerate is useful for obtaining an indexed list:
+            #     (0, seq[0]), (1, seq[1]), (2, seq[2]), ...
+            for evCol, evChar in enumerate(eaLine):
+                if evChar == 'S':
+                    return (eaRow, evCol, self.sPipeMap[evChar])
+        return None
+
     def process_data(self, theDebugFlag: bool = False) -> None:
         self.sData = [list(eaLine) for eaLine in self.sData.split('\n') if eaLine.strip()]
         if theDebugFlag:
-            for line in self.sData:
+            for eaLine in self.sData:
                 self.sOutputText.setFont(QFont("Courier", 10))
-                self.sOutputText.append(str(line))
+                self.sOutputText.append(str(eaLine))
+
+    def breadth_first_search(self, myRow, myCol, theDebugFlag: bool = False):
+        # BFS explores all the neighbors at the present depth before moving on to nodes at
+        # the next depth level. This approach can be more suitable for this problem as it
+        # naturally handles cases where the shortest path to a node isn't the first one found.
+
+        # Initialize the queue with the start position and distance
+        myQueue = deque([(myRow, myCol, 0)])
+        """ myQueue = deque([(myRow, myCol, 0)])
+
+        This line is initializing a double-ended queue (deque) with a tuple containing
+        the starting row (myRow), the starting column (myCol), and the initial distance (0).
+
+        A deque (pronounced "deck") is a thread-safe double-ended queue that allows
+        us to append and pop elements from both ends efficiently (O(1) complexity).
+
+        In the context of this code, the deque is used to implement a breadth-first
+        search (BFS) algorithm. The tuples in the queue represent cells in a grid,
+        where myRow and myCol are the coordinates of the cell and the third element
+        of the tuple is the distance from the start cell.
+
+        The BFS algorithm starts by visiting an initial cell (in this case, the
+        cell at (myRow, myCol)) and then iteratively visits all the unvisited
+        neighbors of the already visited cells. The deque is used to keep track
+        of which cells to visit next.
+        """
+
+        # Initialize visited as a set
+        myVisitedNodes = set()
+        myMaxSteps = 0
+
+        while myQueue:
+            myRow, myCol, mySteps = myQueue.popleft()
+            # Get the character at the current cell
+            char = self.sData[myRow][myCol]
+            # If the cell has been visited, skip
+            if (myRow, myCol) in myVisitedNodes:
+                continue
+            # Mark the cell as visited
+            myVisitedNodes.add((myRow, myCol))
+            # Update the maximum distance
+            myMaxSteps = max(myMaxSteps, mySteps)
+            # Get the directions that the character can connect to
+            myDirections = self.sPipeMap[char]
+            for eaDirection in myDirections:
+                myNewRow, myNewCol = myRow, myCol
+                if eaDirection == 'N':
+                    myNewRow -= 1
+                elif eaDirection == 'S':
+                    myNewRow += 1
+                elif eaDirection == 'E':
+                    myNewCol += 1
+                elif eaDirection == 'W':
+                    myNewCol -= 1
+                # Only move in the direction if the new cell's character allows it
+                if 0 <= myNewRow < len(self.sData) and 0 <= myNewCol < len(self.sData[0]):
+                    myNewChar = self.sData[myNewRow][myNewCol]
+                    myOppositeDirection = {'N': 'S', 'S': 'N', 'E': 'W', 'W': 'E'}[eaDirection]
+                    if myNewChar != '.' and myOppositeDirection in self.sPipeMap[myNewChar]:
+                        myQueue.append((myNewRow, myNewCol, mySteps + 1))
+                        if theDebugFlag:
+                            self.sOutputText.setFont(QFont("Courier", 10))
+                            self.sOutputText.append(f"Moving from ({myRow}, {myCol}) with symbol '{char}'")
+                            self.sOutputText.append(f"To ({myNewRow}, {myNewCol}) with symbol '{myNewChar}'")
+                            self.sOutputText.append(f"Because '{char}' can connect to '{myNewChar}' in the '{eaDirection}' direction")
+                            self.sOutputText.append("")
+
+        return myMaxSteps
+
     def calculate_answer(self, theDebugFlag: bool = False) -> int:
-        myTotal = 0
-        return myTotal
+        myStart = self.find_start()
+        if myStart is not None:
+            myRow, myCol, _ = myStart
+            myFurthestDistance = self.breadth_first_search(myRow, myCol, theDebugFlag)
+            return myFurthestDistance
+        else:
+            # Handle the case where 'S' is not found in the data
+            return -1
 
 
 class PuzzleTwo:
@@ -52,9 +142,11 @@ class PuzzleTwo:
         self.sOutputText = theOutputTextWidget
 
     def process_data(self, theDebugFlag: bool = False) -> None:
-        self.sData = [list(map(int, eaLine.split())) for eaLine in self.sData.split('\n') if eaLine.strip()]
+        self.sData = [list(eaLine) for eaLine in self.sData.split('\n') if eaLine.strip()]
         if theDebugFlag:
-            self.sOutputText.append(f"self.sData = {self.sData}")
+            for line in self.sData:
+                self.sOutputText.setFont(QFont("Courier", 10))
+                self.sOutputText.append(str(line))
 
     def calculate_answer(self, theDebugFlag: bool = False) -> int:
         myTotal = 0
@@ -71,7 +163,15 @@ class MainWindow(QMainWindow):
         # definition
         self.sFileLabel = QLabel("Select file:")
         self.sFileCombo = QComboBox()
-        self.sFileCombo.addItems(["day10/sample10.txt", "day10/input10.txt"])
+        self.sFileCombo.setFixedWidth(200)
+        # populate sFileCombo with all .txt files in the day10 folder
+        myCurrentWorkingDir = os.getcwd()
+        # get a list of all the .txt files in the day10 directory
+        myTextFiles = glob.glob(os.path.join(myCurrentWorkingDir, 'day10', '*.txt'))
+        # show the filename only, retain the the full path
+        for file in myTextFiles:
+            self.sFileCombo.addItem(os.path.basename(file), file)
+
         self.sShowPuzzleButton = QPushButton("Show Puzzle")
         self.sShowPuzzleButton.clicked.connect(self.show_puzzle)
         self.sShowDataButton = QPushButton("Show Data")
@@ -118,7 +218,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(myWidget)
 
     def show_data(self):
-        myFilename = self.sFileCombo.currentText()
+        myFilename = self.sFileCombo.currentData()  # Get the full path of the selected file
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
 
@@ -179,7 +279,7 @@ class MainWindow(QMainWindow):
         # Record the start time
         myStartTime = time.time()
 
-        myFilename = self.sFileCombo.currentText()
+        myFilename = self.sFileCombo.currentData()  # Get the full path of the selected file
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
         myPuzzle1 = PuzzleOne(myData, self.sOutputText)  # Pass the output text widget to PuzzleOne
@@ -191,7 +291,6 @@ class MainWindow(QMainWindow):
 
         # Record the end time
         myEndTime = time.time()
-
         # Calculate and print the execution time
         myExecutionTime = myEndTime - myStartTime
         self.sOutputText.append(f"Execution time: {myExecutionTime} seconds")
@@ -199,7 +298,7 @@ class MainWindow(QMainWindow):
     def solve2(self):
         # Record the start time to measure code speed
         myStartTime = time.time()
-        myFilename = self.sFileCombo.currentText()
+        myFilename = self.sFileCombo.currentData()  # Get the full path of the selected file
         with open(myFilename) as myRawFile:
             myData = myRawFile.read()
         myPuzzle2 = PuzzleTwo(myData, self.sOutputText)  # Pass the output text widget to PuzzleTwo
